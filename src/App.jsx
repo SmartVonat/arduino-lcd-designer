@@ -176,7 +176,7 @@ const FONT_DATA = `
     { 0x00, 0x00, 0x00, 0x1F, 0x04, 0x04, 0x1F, 0x00 }, // Char 170 special
     { 0x00, 0x00, 0x02, 0x1F, 0x06, 0x0A, 0x12, 0x00 }, // Char 171 special
     { 0x00, 0x00, 0x08, 0x1F, 0x09, 0x0A, 0x08, 0x00 }, // Char 172 special
-    { 0x00, 0x00, 0x00, 0x0E, 0x02, 0x02, 0x1F, 0x00 }, // Char 173 special
+    { 0x00, 0x00, 0x00, 0x0E, 0x02, 0x02, 0x1F, 0x00 }, // Char 173 special "Reverse E"
     { 0x00, 0x00, 0x1E, 0x02, 0x1E, 0x02, 0x1E, 0x00 }, // Char 174 special "Reverse E"
     { 0x00, 0x00, 0x00, 0x15, 0x15, 0x01, 0x06, 0x00 }, // Char 175 special "Radiator"
     { 0x00, 0x00, 0x00, 0x1F, 0x00, 0x00, 0x00, 0x00 }, // Char 176 special "Dash"
@@ -332,7 +332,7 @@ const CustomChar = React.memo(({ pixels, className = "" }) => {
     <div className={`grid grid-rows-8 grid-cols-5 gap-[1px] ${className}`}>
       {pixels.map((row, r) =>
         row.map((on, c) => (
-          <div key={`${r}-${c}`} className={`transition-colors ${on ? 'bg-[var(--lcd-pixel-on)]' : 'bg-[var(--lcd-pixel-off)]'}`} />
+          <div key={`${r}-${c}`} className={`${on ? 'bg-[var(--lcd-pixel-on)]' : 'bg-[var(--lcd-pixel-off)]'}`} />
         ))
       )}
     </div>
@@ -366,10 +366,10 @@ const Cell = React.memo(({ cardId, row, col, value, onUpdate, onFocusNext, custo
     }
     else if (e.key.length === 1) { 
       e.preventDefault();
-      const charStr = e.key; // Removed forced uppercase so we respect explicit font mapping
+      const charStr = e.key;
       if (CHAR_TO_CODE[charStr] !== undefined) {
         onUpdate(cardId, row, col, charStr);
-        onFocusNext(row, col + 1);
+        onFocusNext(cardId, row, col + 1); // Fixed missing cardId here
       }
     }
   };
@@ -407,7 +407,7 @@ const Cell = React.memo(({ cardId, row, col, value, onUpdate, onFocusNext, custo
       id={`cell-${cardId}-${row}-${col}`}
       tabIndex={0}
       title={tooltip}
-      className={`w-[29px] h-[41px] flex items-center justify-center outline-none focus:ring-2 focus:ring-inset cursor-text transition-colors duration-75 relative bg-[var(--lcd-cell-bg)] focus:bg-[var(--lcd-cell-focus)] focus:ring-[var(--lcd-cell-ring)]`}
+      className={`w-[29px] h-[41px] flex items-center justify-center outline-none focus:ring-2 focus:ring-inset cursor-text relative bg-[var(--lcd-cell-bg)] focus:bg-[var(--lcd-cell-focus)] focus:ring-[var(--lcd-cell-ring)]`}
       onKeyDown={handleKeyDown}
       onClick={(e) => e.currentTarget.focus()}
       onDragOver={(e) => { e.preventDefault(); e.currentTarget.style.filter = 'brightness(1.1)'; }}
@@ -719,9 +719,9 @@ export default function App() {
               {/* Hardware LCD Bezel */}
               <div className="bg-[#1a1a1a] rounded-xl p-5 flex items-center justify-center shadow-xl mx-auto w-fit">
                 {/* PCB Trace Outline */}
-                <div className={`p-1.5 rounded shadow-[inset_0_2px_10px_rgba(0,0,0,0.7)] transition-colors bg-[var(--lcd-pcb)]`}>
+                <div className={`p-1.5 rounded shadow-[inset_0_2px_10px_rgba(0,0,0,0.7)] bg-[var(--lcd-pcb)]`}>
                   {/* Actual Screen Grid */}
-                  <div className={`p-2 flex flex-col gap-[2px] shadow-[inset_0_0_15px_rgba(0,0,0,0.2)] transition-colors bg-[var(--lcd-grid-container)]`}>
+                  <div className={`p-2 flex flex-col gap-[2px] shadow-[inset_0_0_15px_rgba(0,0,0,0.2)] bg-[var(--lcd-grid-container)]`}>
                     {card.grid.map((row, r) => (
                       <div key={r} className="flex gap-[2px]">
                         {row.map((val, c) => (
@@ -772,7 +772,7 @@ export default function App() {
                     e.dataTransfer.setData('specialCharCode', char.code.toString());
                   }}
                   title={`Code: ${char.code}\n${char.title}`}
-                  className={`w-[44px] h-[64px] p-[4px] rounded shadow-sm cursor-grab active:cursor-grabbing transition-all bg-[var(--lcd-grid-container)] ring-1 ring-black/20 hover:scale-105 hover:shadow-md`}
+                  className={`w-[44px] h-[64px] p-[4px] rounded shadow-sm cursor-grab active:cursor-grabbing bg-[var(--lcd-grid-container)] ring-1 ring-black/20 hover:scale-105 hover:shadow-md`}
                 >
                   <CustomChar pixels={char.pixels} className="w-full h-full pointer-events-none" />
                 </div>
@@ -811,7 +811,7 @@ export default function App() {
                   }}
                   onClick={() => setActiveCharId(char.id)}
                   title="Custom Character"
-                  className={`w-[44px] h-[64px] p-[4px] rounded shadow-sm cursor-pointer transition-all bg-[var(--lcd-grid-container)] ${
+                  className={`w-[44px] h-[64px] p-[4px] rounded shadow-sm cursor-pointer bg-[var(--lcd-grid-container)] ${
                     activeCharId === char.id ? 'ring-4 ring-blue-500/50 scale-105 z-10' : 'ring-1 ring-black/20 hover:scale-105 hover:shadow-md'
                   }`}
                 >
@@ -831,14 +831,14 @@ export default function App() {
                 Click pixels to toggle them on or off. Drag the character from the swatch above onto any display cell.
               </p>
               
-              <div className={`p-4 rounded-lg shadow-inner border-[4px] transition-colors bg-[var(--lcd-grid-container)] border-[var(--lcd-pcb)]`}>
+              <div className={`p-4 rounded-lg shadow-inner border-[4px] bg-[var(--lcd-grid-container)] border-[var(--lcd-pcb)]`}>
                 <div className="grid grid-rows-8 grid-cols-5 gap-[3px] w-[212px] h-[341px]">
                   {customChars.find(c => c.id === activeCharId)?.pixels.map((row, r) =>
                     row.map((on, c) => (
                       <div
                         key={`${r}-${c}`}
                         onClick={() => togglePixel(r, c)}
-                        className={`cursor-pointer transition-colors ${on ? 'bg-[var(--lcd-pixel-on)]' : 'bg-[var(--lcd-editor-off)] hover:bg-[var(--lcd-editor-hover)]'}`}
+                        className={`cursor-pointer ${on ? 'bg-[var(--lcd-pixel-on)]' : 'bg-[var(--lcd-editor-off)] hover:bg-[var(--lcd-editor-hover)]'}`}
                       />
                     ))
                   )}
