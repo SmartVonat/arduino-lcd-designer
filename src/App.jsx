@@ -756,31 +756,34 @@ export default function App() {
         </main>
       </div>
 
-      {/* Right Panel: Character Swatches & Editor */}
-      <div className="w-96 bg-white flex flex-col h-full z-0">
+      {/* Middle Panel: Special Characters */}
+      <div className="w-80 bg-white flex flex-col h-full border-l border-gray-200 z-0">
+        <div className="p-4 border-b border-gray-200 bg-gray-50 shadow-sm z-10">
+          <h2 className="font-bold text-gray-800 text-sm">Special Characters</h2>
+        </div>
         
-        {/* Baked-in Special Characters */}
-        <div className="p-4 border-b border-gray-200 bg-gray-50 flex flex-col shadow-sm z-10">
-          <h2 className="font-bold text-gray-800 text-sm mb-3">Special Characters</h2>
-          <div className="max-h-[160px] overflow-y-auto pr-1">
-            <div className="flex flex-wrap gap-2">
-              {SPECIAL_CHARS.map(char => (
-                <div
-                  key={char.code}
-                  draggable
-                  onDragStart={(e) => {
-                    e.dataTransfer.setData('specialCharCode', char.code.toString());
-                  }}
-                  title={`Code: ${char.code}\n${char.title}`}
-                  className={`w-[44px] h-[64px] p-[4px] rounded shadow-sm cursor-grab active:cursor-grabbing bg-[var(--lcd-grid-container)] ring-1 ring-black/20 hover:scale-105 hover:shadow-md`}
-                >
-                  <CustomChar pixels={char.pixels} className="w-full h-full pointer-events-none" />
-                </div>
-              ))}
-            </div>
+        <div className="flex-1 p-4 overflow-y-auto bg-gray-50/50">
+          <div className="flex flex-wrap gap-2">
+            {SPECIAL_CHARS.map(char => (
+              <div
+                key={char.code}
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData('specialCharCode', char.code.toString());
+                }}
+                title={`Code: ${char.code}\n${char.title}`}
+                className={`w-[44px] h-[64px] p-[4px] rounded shadow-sm cursor-grab active:cursor-grabbing bg-[var(--lcd-grid-container)] ring-1 ring-black/20 hover:scale-105 hover:shadow-md`}
+              >
+                <CustomChar pixels={char.pixels} className="w-full h-full pointer-events-none" />
+              </div>
+            ))}
           </div>
         </div>
+      </div>
 
+      {/* Right Panel: Custom Characters & Editor */}
+      <div className="w-96 bg-white flex flex-col h-full border-l border-gray-200 shadow-[[-2px_0_8px_rgba(0,0,0,0.05)]] z-0">
+        
         {/* Custom Characters Header */}
         <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between shadow-sm z-10">
           <h2 className="font-bold text-gray-800 text-sm">Custom Characters</h2>
