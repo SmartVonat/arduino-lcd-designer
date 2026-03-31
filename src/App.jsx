@@ -11,8 +11,8 @@ const generateId = () => {
 
 const generateCArray = (pixels) => {
   if (!pixels) return "";
-  const rows = pixels.map(row => '0B' + row.join(''));
-  return `byte character[] = {${rows.join(',')}};`;
+  const rows = pixels.map(row => ' 0B' + row.join(''));
+  return `      byte character[] = {${rows.join(',')}};`;
 };
 
 // --- Embedded Hardware Font Data ---
@@ -544,7 +544,7 @@ export default function App() {
     const newPixels = [];
     for (let part of parts) {
       let clean = part.trim().toUpperCase();
-      if (clean.startsWith('0B')) clean = clean.substring(1);
+      if (clean.startsWith(' 0B')) clean = clean.substring(1);
       if (!/^[01]{5}$/.test(clean)) return;
       newPixels.push(clean.split('').map(n => parseInt(n, 10)));
     }
@@ -893,13 +893,13 @@ export default function App() {
               </div>
 
               {/* Editable C-Style Array Output */}
-              <div className="w-full max-w-[212px] mt-4 flex flex-col gap-1">
+              <div className="w-full max-w-[250px] mt-4 flex flex-col gap-1">
                 <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">C-Style Array</label>
                 <textarea 
                   value={cArrayText}
                   onChange={handleTextEdit}
                   className="w-full text-xs font-mono p-2 border border-gray-200 rounded-md bg-gray-50 text-gray-700 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 resize-none break-all"
-                  rows="3"
+                  rows="4"
                   spellCheck="false"
                 />
               </div>
