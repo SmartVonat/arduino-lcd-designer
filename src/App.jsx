@@ -11,7 +11,7 @@ const generateId = () => {
 
 const generateCArray = (pixels) => {
   if (!pixels) return "";
-  const rows = pixels.map(row => 'B' + row.join(''));
+  const rows = pixels.map(row => '0B' + row.join(''));
   return `byte character[] = {${rows.join(',')}};`;
 };
 
@@ -544,7 +544,7 @@ export default function App() {
     const newPixels = [];
     for (let part of parts) {
       let clean = part.trim().toUpperCase();
-      if (clean.startsWith('B')) clean = clean.substring(1);
+      if (clean.startsWith('0B')) clean = clean.substring(1);
       if (!/^[01]{5}$/.test(clean)) return;
       newPixels.push(clean.split('').map(n => parseInt(n, 10)));
     }
