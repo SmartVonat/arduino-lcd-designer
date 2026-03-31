@@ -9,6 +9,12 @@ const generateId = () => {
   return Date.now().toString(36) + Math.random().toString(36).slice(2);
 };
 
+const generateCArray = (pixels) => {
+  if (!pixels) return "";
+  const rows = pixels.map(row => 'B' + row.join(''));
+  return `byte character[] = {${rows.join(',')}};`;
+};
+
 // --- Embedded Hardware Font Data ---
 const FONT_DATA = `
     { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, // Char 8
@@ -435,6 +441,7 @@ export default function App() {
   const [activeCharId, setActiveCharId] = useState(null);
   const [theme, setTheme] = useState('blue');
   const [isLoaded, setIsLoaded] = useState(false);
+  const [cArrayText, setCArrayText] = useState("");
   
   // Drag and drop state for cards
   const [draggableCardId, setDraggableCardId] = useState(null);
@@ -516,6 +523,37 @@ export default function App() {
     setActiveCharId(newChar.id);
   };
 
+  useEffect(() => {
+    if (activeCharId) {
+      const char = customChars.find(c => c.id === activeCharId);
+      if (char) setCArrayText(generateCArray(char.pixels));
+    } else {
+      setCArrayText("");
+    }
+  }, [activeCharId]);
+
+  const handleTextEdit = (e) => {
+    const val = e.target.value;
+    setCArrayText(val);
+    
+    const match = val.match(/\{([^}]+)\}/);
+    if (!match) return;
+    const parts = match[1].split(',');
+    if (parts.length !== 8) return;
+    
+    const newPixels = [];
+    for (let part of parts) {
+      let clean = part.trim().toUpperCase();
+      if (clean.startsWith('B')) clean = clean.substring(1);
+      if (!/^[01]{5}$/.test(clean)) return;
+      newPixels.push(clean.split('').map(n => parseInt(n, 10)));
+    }
+    
+    setCustomChars(prev => prev.map(char => 
+      char.id === activeCharId ? { ...char, pixels: newPixels } : char
+    ));
+  };
+
   const deleteCustomChar = (id) => {
     setCustomChars(prev => prev.filter(c => c.id !== id));
     if (activeCharId === id) setActiveCharId(null);
@@ -528,13 +566,19 @@ export default function App() {
   };
 
   const togglePixel = (r, c) => {
-    setCustomChars(prev => prev.map(char => {
-      if (char.id !== activeCharId) return char;
-      const newPixels = char.pixels.map((row, rowIndex) =>
-        rowIndex === r ? row.map((val, colIndex) => colIndex === c ? (val ? 0 : 1) : val) : row
-      );
-      return { ...char, pixels: newPixels };
-    }));
+    setCustomChars(prev => {
+      let updatedPixels = null;
+      const next = prev.map(char => {
+        if (char.id !== activeCharId) return char;
+        const newPixels = char.pixels.map((row, rowIndex) =>
+          rowIndex === r ? row.map((val, colIndex) => colIndex === c ? (val ? 0 : 1) : val) : row
+        );
+        updatedPixels = newPixels;
+        return { ...char, pixels: newPixels };
+      });
+      if (updatedPixels) setCArrayText(generateCArray(updatedPixels));
+      return next;
+    });
   };
 
   const handleImport = (e) => {
@@ -846,6 +890,18 @@ export default function App() {
                     ))
                   )}
                 </div>
+              </div>
+
+              {/* Editable C-Style Array Output */}
+              <div className="w-full max-w-[212px] mt-4 flex flex-col gap-1">
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">C-Style Array</label>
+                <textarea 
+                  value={cArrayText}
+                  onChange={handleTextEdit}
+                  className="w-full text-xs font-mono p-2 border border-gray-200 rounded-md bg-gray-50 text-gray-700 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 resize-none break-all"
+                  rows="3"
+                  spellCheck="false"
+                />
               </div>
 
               <button 
